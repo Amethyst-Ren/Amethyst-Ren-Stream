@@ -1,0 +1,114 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta charset='UTF-8' />
+		<meta name='viewport' content='initial-scale=1, minimum-scale=1, maximum-scale=2'/>
+		<title>Schedule - amethyst_ren</title>
+		<link rel='stylesheet' href='schedule.css'/>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/dayjs/1.10.4/dayjs.min.js" integrity="sha512-0fcCRl828lBlrSCa8QJY51mtNqTcHxabaXVLPgw/jPA5Nutujh6CbTdDgRzl9aSPYW/uuE7c4SffFUQFBAy6lg==" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/dayjs/1.10.4/plugin/localizedFormat.min.js" integrity="sha512-Ik4L88eO6WOyP27Lb+m7a2u4BdYgEvNNB+zzhTMDSD2Z77vExkikHm95PUBLXqP2hZmxJo2JyJFgxhpslxq1Aw==" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/dayjs/1.10.4/plugin/timezone.min.js" integrity="sha512-pslqxxHAYPCxaSeFSmXXxDkLejD5dbFVC66aiVq0z4v7VTJBU+wqcG1OpNh4p3MjS2D6NCwz/H2QmSc7dXxryg==" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/dayjs/1.10.4/plugin/utc.min.js" integrity="sha512-m00bfmYnAl3plEBlQfeQUhw/U2uvmw29V2+jxSWpAjankMWS+zAsjezbKWDEJNXqWq9o9qQZSOiA2RKDpa4D5w==" crossorigin="anonymous"></script>
+	</head>
+	<body>
+		<div class='schedule'>
+			<header>
+				<h1>Amethyst Ren's Schedule</h1>
+			</header>
+			<main>
+				<section>
+					<div class='icon'><img src='twitch_64.png' height='32' width='32' alt='Twitch'/></div>
+					<div class='streamHeader'><h2>
+						<span class='weekday'>Monday</span>
+						<span class='startTime'>18:00</span>
+					</h2></div>
+					<div class='streamerTimeLine'>(<span class='streamerTime'>Monday 18:00</span> in NSW)</div>
+					<div class='description'><strong>Pokémon Sword</strong>: The Crown Tundra</div>
+				</section>
+				<section>
+					<div class='icon'><img src='twitch_64.png' height='32' width='32' alt='Twitch'/></div>
+					<div class='streamHeader'><h2>
+						<span class='weekday'>Wednesday</span>
+						<span class='startTime'>18:00</span>
+					</h2></div>
+					<div class='streamerTimeLine'>(<span class='streamerTime'>Wednesday 18:00</span> in NSW)</div>
+					<div class='description'><strong>Splatoon 2</strong>: Salmon Run<br/><strong>Fire Emblem: Three Houses</strong>: Blind playthrough</div>
+				</section>
+				<section>
+					<div class='icon'><img src='twitch_64.png' height='32' width='32' alt='Twitch'/></div>
+					<div class='streamHeader'><h2>
+						<span class='weekday'>Friday</span>
+						<span class='startTime'>18:00</span>
+					</h2></div>
+					<div class='streamerTimeLine'>(<span class='streamerTime'>Friday 18:00</span> in NSW)</div>
+					<div class='description'><strong>Splatoon 2</strong>: Salmon Run<br/><strong>Super Smash Bros. Ultimate</strong>: Viewer Arena</div>
+				</section>
+				<section>
+					<div class='icon'><img src='twitch_64.png' height='32' width='32' alt='Twitch'/></div>
+					<div class='streamHeader'><h2>
+						<span class='weekday'>Saturday</span>
+						<span class='startTime'>18:00</span>
+					</h2></div>
+					<div class='streamerTimeLine'>(<span class='streamerTime'>Saturday 18:00</span> in NSW)</div>
+					<div class='description'><strong>Splatoon 2</strong>: Turf War/Private Battle<br/><strong>Pokémon Sword</strong>: Link Battles: Metronome only</div>
+				</section>
+			</main>
+			<footer>
+				<p><a href='https://twitch.tv/amethyst_ren'><img id='twitchLogo' src='twitch_64.png' height='32' width='32' alt='Twitch'/> amethyst_ren</a></p>
+				<p>Times shown are in <span id='timezone'>Australia/Sydney</span> time.</p>
+			</footer>
+		</div>
+		<script>
+			'use strict';
+
+			var sourceTimezone = 'Australia/Sydney';
+			var dayNumbers = { "Su": 0, "Mo": 1, "Tu": 2, "We": 3, "Th": 4, "Fr": 5, "Sa": 6 };
+			var dayNames = [ "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" ];
+			var events = [ ];
+
+			dayjs.extend(dayjs_plugin_localizedFormat);
+			dayjs.extend(dayjs_plugin_timezone);
+			dayjs.extend(dayjs_plugin_utc);
+
+			window.addEventListener('load', () => {
+				var currentTimeInSydney = dayjs().tz(sourceTimezone);
+
+				for (var el of document.getElementsByTagName('section')) {
+					var targetWeekday = dayNumbers[el.getElementsByClassName('weekday')[0].innerText.substring(0, 2)];
+					var time = currentTimeInSydney;  // Immutable
+					var fields = el.getElementsByClassName('startTime')[0].innerText.split(':').map(s => parseInt(s));
+
+					if (time.day() == targetWeekday) {
+						if (time.hour() < fields[0] || (time.hour() == fields[0] && time.minute() < fields[1])) {
+							// Current time is before stream time on the same day.
+							time = time.hour(fields[0]).minute(fields[1]).second(0).millisecond(0);
+						} else {
+							// Current time is after stream time on the same day; add 7 days.
+							time = time.date(time.date() + 7).hour(fields[0]).minute(fields[1]).second(0).millisecond(0);
+						}
+					} else {
+						var daysAway = targetWeekday - time.day();
+						if (daysAway < 0) daysAway += 7;
+						time = time.date(time.date() + daysAway).hour(fields[0]).minute(fields[1]).second(0).millisecond(0);
+					}
+
+					// If we pass a Daylight Saving transition, we need to correct the offset.
+					time = time.tz(sourceTimezone, true);
+
+					// Get the corresponding local time.
+					var localDate = dayjs(time.valueOf());
+
+					events.push({
+						time: localDate,
+						element: el
+					});
+
+					el.getElementsByClassName('weekday')[0].innerText = dayNames[localDate.day()];
+					el.getElementsByClassName('startTime')[0].innerText = localDate.format('HH:mm');
+				}
+
+				document.getElementById('timezone').innerText = Intl.DateTimeFormat().resolvedOptions().timeZone;
+			});
+		</script>
+	</body>
+</html>
