@@ -30,7 +30,13 @@ main {
 	min-width: 30em;
 }
 section { margin: 1em; }
-#twitchLogo { vertical-align: middle; }
+
+#logos li {
+	display: inline-block;
+	padding: 0 1em;
+}
+#logos img { vertical-align: middle; }
+
 header, footer { text-align: center; }
 p, h1 { margin: 0.5em; }
 
