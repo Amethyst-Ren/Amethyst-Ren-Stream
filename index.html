@@ -18,80 +18,63 @@
 			<main>
 
 				<section>
-
 					<div class='icon'><img src='youtube_64.png' height='32' width='32' alt='Twitch'/></div>
 					<div class='streamHeader'><h2>
 						<span class='weekday'>Monday</span>
 						<span class='startTime'>17:00</span>
 					</h2></div>
-					<div class='streamerTimeLine'>(<span class='streamerTime'>Monday 17:00</span> in NSW)</div>
 					<div class='description'><strong> World's End Club </strong>: Solo </div>
-
 				</section>
-				<section>
 
+				<section>
 					<div class='icon'><img src='youtube_64.png' height='32' width='32' alt='Twitch'/></div>
 					<div class='streamHeader'><h2>
 						<span class='weekday'>Tuesday</span>
 						<span class='startTime'>18:00</span>
 					</h2></div>
-					<div class='streamerTimeLine'>(<span class='streamerTime'>Monday 18:00</span> in NSW)</div>
-					<div class='description'><strong> World's End Club blind playthrough</div>
-
+					<div class='description'><strong> World's End Club</strong>: blind playthrough</div>
 				</section>
-				<section>
 
+				<section>
 					<div class='icon'><img src='youtube_64.png' height='32' width='32' alt='Twitch'/></div>
 					<div class='streamHeader'><h2>
 						<span class='weekday'>Wednesday</span>
 						<span class='startTime'>18:00</span>
 					</h2></div>
-					<div class='streamerTimeLine'>(<span class='streamerTime'>Wednesday 18:00</span> in NSW)</div>
 					<div class='description'><strong> World's End Club </strong>: blind playthrough </div>
-
 				</section>
-				<section>
 
+				<section>
 					<div class='icon'><img src='twitch_64.png' height='32' width='32' alt='Twitch'/></div>
 					<div class='streamHeader'><h2>
 						<span class='weekday'>Friday</span>
 						<span class='startTime'>17:00</span>
 					</h2></div>
-					<div class='streamerTimeLine'>(<span class='streamerTime'>Friday 17:00</span> in NSW)</div>
 					<div class='description'><strong>ACNH</strong>: DLC </div>
-
 				</section>
+
 				<section>
-
-
 					<div class='icon'><img src='twitch_64.png' height='32' width='32' alt='Twitch'/></div>
 					<div class='streamHeader'><h2>
 						<span class='weekday'>Saturday</span>
 						<span class='startTime'>17:00</span>
 					</h2></div>
-					<div class='streamerTimeLine'>(<span class='streamerTime'>Saturday 17:00</span> in NSW)</div>
 					<div class='description'><strong>Splatoon 2</strong>: games w/ viewers</div>
 				</section>
 
-
-
-
-
 			</main>
 			<footer>
-				<p>
-					<ul id='logos'>
-						<li><a href='https://twitch.tv/amethyst_ren'><img id='twitchLogo' src='twitch_64.png' height='32' width='32' alt='Twitch'/> amethyst_ren</a></li>
-						<li><a href='https://www.youtube.com/channel/UCqTorBg_m6pGgJyp70WJwvQ'><img id='youtubeLogo' src='youtube_64.png' height='32' width='32' alt='YouTube'/> Amethyst Ren</a></li>
-					</ul>
-				</p>
+				<ul id='logos'>
+					<li><a href='https://twitch.tv/amethyst_ren'><img id='twitchLogo' src='twitch_64.png' height='32' width='32' alt='Twitch'/> amethyst_ren</a></li>
+					<li><a href='https://www.youtube.com/channel/UCqTorBg_m6pGgJyp70WJwvQ'><img id='youtubeLogo' src='youtube_64.png' height='32' width='32' alt='YouTube'/> Amethyst Ren</a></li>
+				</ul>
 				<p>Times are approxaimate only. Times shown are in <span id='timezone'>Australia/Sydney</span> time.</p>
 			</footer>
 		</div>
 		<script>
 			'use strict';
 
-			var sourceTimezone = 'Australia/Sydney';
+			var sourceTimezone = document.getElementById('timezone').innerText;
 			var dayNumbers = { "Su": 0, "Mo": 1, "Tu": 2, "We": 3, "Th": 4, "Fr": 5, "Sa": 6 };
 			var dayNames = [ "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" ];
 			var events = [ ];
@@ -101,43 +84,57 @@
 			dayjs.extend(dayjs_plugin_utc);
 
 			window.addEventListener('load', () => {
-				var currentTimeInSydney = dayjs().tz(sourceTimezone);
+				if (window.location.search != '?noconversion' && window.location.hash != '#noconversion') {
+					var currentTimeInSydney = dayjs().tz(sourceTimezone);
 
-				for (var el of document.getElementsByTagName('section')) {
-					var targetWeekday = dayNumbers[el.getElementsByClassName('weekday')[0].innerText.substring(0, 2)];
-					var time = currentTimeInSydney;  // Immutable
-					var fields = el.getElementsByClassName('startTime')[0].innerText.split(':').map(s => parseInt(s));
+					for (var el of document.getElementsByTagName('section')) {
+						var targetWeekday = dayNumbers[el.getElementsByClassName('weekday')[0].innerText.substring(0, 2)];
+						var time = currentTimeInSydney;  // Immutable
+						var fields = el.getElementsByClassName('startTime')[0].innerText.split(':').map(s => parseInt(s));
 
-					if (time.day() == targetWeekday) {
-						if (time.hour() < fields[0] || (time.hour() == fields[0] && time.minute() < fields[1])) {
-							// Current time is before stream time on the same day.
-							time = time.hour(fields[0]).minute(fields[1]).second(0).millisecond(0);
+						if (time.day() == targetWeekday) {
+							if (time.hour() < fields[0] || (time.hour() == fields[0] && time.minute() < fields[1])) {
+								// Current time is before stream time on the same day.
+								time = time.hour(fields[0]).minute(fields[1]).second(0).millisecond(0);
+							} else {
+								// Current time is after stream time on the same day; add 7 days.
+								time = time.date(time.date() + 7).hour(fields[0]).minute(fields[1]).second(0).millisecond(0);
+							}
 						} else {
-							// Current time is after stream time on the same day; add 7 days.
-							time = time.date(time.date() + 7).hour(fields[0]).minute(fields[1]).second(0).millisecond(0);
+							var daysAway = targetWeekday - time.day();
+							if (daysAway < 0) daysAway += 7;
+							time = time.date(time.date() + daysAway).hour(fields[0]).minute(fields[1]).second(0).millisecond(0);
 						}
-					} else {
-						var daysAway = targetWeekday - time.day();
-						if (daysAway < 0) daysAway += 7;
-						time = time.date(time.date() + daysAway).hour(fields[0]).minute(fields[1]).second(0).millisecond(0);
+
+						// If we pass a Daylight Saving transition, we need to correct the offset.
+						time = time.tz(sourceTimezone, true);
+
+						// Get the corresponding local time.
+						var localDate = dayjs(time.valueOf());
+
+						events.push({
+							time: localDate,
+							element: el
+						});
+
+						el.getElementsByClassName('weekday')[0].innerText = dayNames[localDate.day()];
+						el.getElementsByClassName('startTime')[0].innerText = localDate.format('HH:mm');
+						var streamerTimeLine = document.createElement('div');
+						streamerTimeLine.setAttribute('class', 'streamerTimeLine');
+						streamerTimeLine.innerText = `(${dayNames[targetWeekday]} ${time.format('HH:mm')} in NSW)`;
+						el.insertBefore(streamerTimeLine, el.getElementsByClassName('streamHeader')[0].nextSibling);
 					}
 
-					// If we pass a Daylight Saving transition, we need to correct the offset.
-					time = time.tz(sourceTimezone, true);
-
-					// Get the corresponding local time.
-					var localDate = dayjs(time.valueOf());
-
-					events.push({
-						time: localDate,
-						element: el
-					});
-
-					el.getElementsByClassName('weekday')[0].innerText = dayNames[localDate.day()];
-					el.getElementsByClassName('startTime')[0].innerText = localDate.format('HH:mm');
+					document.getElementById('timezone').innerText = Intl.DateTimeFormat().resolvedOptions().timeZone;
+				} else {
+					for (var el of document.getElementsByTagName('section')) {
+						// Add a blank streamerTimeLine for layout consistency.
+						var streamerTimeLine = document.createElement('div');
+						streamerTimeLine.setAttribute('class', 'streamerTimeLine');
+						streamerTimeLine.innerHTML = '&nbsp;';
+						el.insertBefore(streamerTimeLine, el.getElementsByClassName('streamHeader')[0].nextSibling);
+					}
 				}
-
-				document.getElementById('timezone').innerText = Intl.DateTimeFormat().resolvedOptions().timeZone;
 			});
 		</script>
 	</body>
